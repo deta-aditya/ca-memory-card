@@ -1,30 +1,42 @@
 <script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
+import { provide, ref, watch } from 'vue';
+
+import Root from './components/Root.vue';
+
+import { createApp } from './core'
+import { Game } from './core/entities/game';
+import { Card } from './core/entities/card';
+import { AppContextValue } from './types';
+
+const app = createApp();
+const state = ref<{ game: Game }>({ 
+  game: { kind: 'not-started' }
+});
+
+function setState(newState: Game) {
+  state.value.game = newState;
+}
+
+watch(state, (newState) => {
+  if (newState.game.kind === 'matching') {
+    setTimeout(() => {
+      app.matchCard(newState.game, setState);
+    }, 500)
+  }
+}, { deep: true })
+
+const contextValue: AppContextValue = {
+  state,
+  startGame: () => app.startGame(null, setState),
+  selectCard: (card: Card) => app.selectCard({ game: state.value.game, card }, setState),
+  resetGame: () => setState({ kind: 'not-started' }),
+}
+
+provide<AppContextValue>('AppContext', contextValue);
 </script>
 
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="app">
+    <Root />
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
-
-<style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
-</style>
