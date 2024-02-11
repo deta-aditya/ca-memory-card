@@ -22,3 +22,30 @@ export const startGame: StartGameInputPort = (_, next) => {
   });
 }
 
+export interface StartGameInputPort2 {
+  interact(request: StartGameRequest): void;
+}
+
+export interface StartGameOutputPort2 {
+  next(response: StartGameResponse): void;
+}
+
+export interface SaveGameCommand {
+  saveGame(game: Game): Promise<void>;
+}
+
+export class StartGame implements StartGameInputPort2 {
+  private output: StartGameOutputPort2;
+  private saveGameCommand: SaveGameCommand;
+
+  interact(request: StartGameRequest) {
+    const cards = shuffledCards();
+    this.saveGameCommand.saveGame({
+      kind: 'playing',
+      actions: [],
+      cards: makeMystery(cards),
+      score: 200,
+    })
+    this.output.next(cards);
+  }
+}
