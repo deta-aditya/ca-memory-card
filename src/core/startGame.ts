@@ -1,7 +1,7 @@
-import { Game } from "./entities/game";
-import { shuffledCards } from "./entities/card";
-import { InputPort, OutputPort } from "./entities/ports";
-import { makeMystery } from "./entities/gameCard";
+import { Game, IGame } from "./game";
+import { shuffledCards } from "./card";
+import { InputPort, OutputPort } from "./ports";
+import { makeMystery } from "./gameCard";
 
 type StartGameRequest = null;
 
@@ -22,30 +22,70 @@ export const startGame: StartGameInputPort = (_, next) => {
   });
 }
 
+export type StartGameRequest2 = IGame;
+export type StartGameResponse2 = IGame;
+
 export interface StartGameInputPort2 {
-  interact(request: StartGameRequest): void;
+  interact(request: StartGameRequest2): void;
 }
 
 export interface StartGameOutputPort2 {
-  next(response: StartGameResponse): void;
+  next(response: StartGameResponse2): void;
+}
+
+export interface GetCurrentGameQuery {
+  getCurrentGame(): Promise<IGame>;
 }
 
 export interface SaveGameCommand {
-  saveGame(game: Game): Promise<void>;
+  saveGame(game: IGame): Promise<void>;
+}
+
+export class End {
+  next() {}
+}
+
+export class Pivot<TResponse, TInteractor extends { interact: (arg: TResponse) => void}> {
+  constructor(
+    private interactor: TInteractor,
+  ) {}
+
+  next(response: TResponse) {
+    this.interactor.interact(response);
+  }
+}
+
+export class GetCurrentGame {
+  constructor(
+    private output: { next: (game: IGame) => void },
+    private getCurrentGameQuery: GetCurrentGameQuery,
+  ) {}
+
+  async interact() {
+    const currentGame = await this.getCurrentGameQuery.getCurrentGame();
+    this.output.next(currentGame);
+  }
+}
+
+export class SaveGame {
+  constructor(
+    private output: { next: (game: IGame) => void },
+    private saveGameCommand: SaveGameCommand,
+  ) {}
+
+  async interact(game: IGame) {
+    this.saveGameCommand.saveGame(game);
+    this.output.next(game);
+  }
 }
 
 export class StartGame implements StartGameInputPort2 {
-  private output: StartGameOutputPort2;
-  private saveGameCommand: SaveGameCommand;
+  constructor(  
+    private output: StartGameOutputPort2,
+  ) {}
 
-  interact(request: StartGameRequest) {
-    const cards = shuffledCards();
-    this.saveGameCommand.saveGame({
-      kind: 'playing',
-      actions: [],
-      cards: makeMystery(cards),
-      score: 200,
-    })
-    this.output.next(cards);
+  async interact(game: IGame) {
+    const startedGame = game.start();
+    this.output.next(startedGame);
   }
 }

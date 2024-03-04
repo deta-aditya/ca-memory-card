@@ -1,6 +1,6 @@
-import { Card, hasSameRank, isEqual } from "./entities/card";
-import { Game } from "./entities/game";
-import { InputPort, OutputPort } from "./entities/ports";
+import { Card, hasSameRank, isEqual } from "./card";
+import { InputPort, OutputPort } from "./ports";
+import { Game } from "./game";
 
 type SelectCardRequest = {
   game: Game;

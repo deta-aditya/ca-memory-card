@@ -1,10 +1,12 @@
-import { ReactNode, createContext, useContext, useEffect, useState } from "react";
-import { createApp } from "../core";
-import { Game } from "../core/entities/game";
-import { Card } from "../core/entities/card";
+import { PropsWithChildren, createContext, useContext, useEffect, useState } from "react";
+import { GameFactory, IGame, NotStarted } from "../core/game";
+import { End, GetCurrentGame, GetCurrentGameQuery, Pivot, SaveGame, SaveGameCommand, StartGame } from "../core/startGame";
+import { Card } from "../core/card";
+
+type ReactStateCompatibleGame = ReturnType<IGame['plain']>;
 
 type AppContextValue = {
-  state: Game;
+  game: IGame;
   startGame: () => void;
   selectCard: (card: Card) => void;
   resetGame: () => void;
@@ -12,26 +14,45 @@ type AppContextValue = {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const app = createApp();
+export function AppContextProvider(props: PropsWithChildren) {
+  const [state, setState] = useState<ReactStateCompatibleGame>(() => new NotStarted().plain());
 
-export function AppContextProvider(props: { children: ReactNode }) {
-  const [state, setState] = useState<Game>({ kind: 'not-started' });
+  const gameFactory: GameFactory = {
+    fromPlain() {
+      return new NotStarted();
+    },
+  }
+
+  const gameObject = gameFactory.fromPlain(state);
+
+  const stateStore = {
+    async saveGame(game: IGame) {
+      setState(game.plain());
+    },
+    async getCurrentGame() {
+      return gameObject;
+    }
+  };
 
   const contextValue: AppContextValue = {
-    state,
-    startGame: () => app.startGame(null, setState),
-    selectCard: card => app.selectCard({ card, game: state }, setState),
-    resetGame: () => setState({ kind: 'not-started' }),
+    game: gameObject,
+    startGame: () => {
+      const saveGame = new SaveGame(new End(), stateStore);
+      const startGame = new StartGame(new Pivot(saveGame));
+      const getCurrentGame = new GetCurrentGame(new Pivot(startGame), stateStore);
+
+      getCurrentGame.interact();
+    }
   }
 
   useEffect(() => {
-    if (state.kind === 'matching') {
-      const timeout = setTimeout(() => {
-        app.matchCard(state, setState);
-      }, 500)
-      return () => clearTimeout(timeout);
-    }
-  }, [state])
+    // if (state.kind === 'matching') {
+    //   const timeout = setTimeout(() => {
+    //     app.matchCard(state, setState);
+    //   }, 500)
+    //   return () => clearTimeout(timeout);
+    // }
+  }, [state]);
 
   return (
     <AppContext.Provider value={contextValue}>

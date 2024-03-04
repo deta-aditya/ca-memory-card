@@ -1,5 +1,5 @@
-import { Game } from "./entities/game";
-import { InputPort, OutputPort } from "./entities/ports";
+import { Game } from "./game";
+import { InputPort, OutputPort } from "./ports";
 
 type MatchCardRequest = Game;
 

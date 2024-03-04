@@ -1,5 +1,5 @@
-import { useAppContext } from "../../contexts/appContext";
-import { Game } from "../../core/entities/game";
+import { useAppContext } from "../../contexts/appContextOld";
+import { Game } from "../../core/game";
 
 export type WonGameProps = Extract<Game, { kind: 'won' }>
 

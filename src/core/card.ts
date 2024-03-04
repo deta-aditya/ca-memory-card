@@ -28,3 +28,32 @@ export function isEqual(card1: Card, card2: Card) {
 export function hasSameRank(card1: Card, card2: Card) {
   return card1.rank === card2.rank;
 }
+
+export class Cards {
+  constructor(
+    private cards: Card[]
+  ) {}
+
+  static fresh() {
+    const cards = SUITS.flatMap(suit => {
+      return RANKS.map(rank => ({
+        suit, rank,
+      }));
+    });
+
+    return new Cards(cards);
+  }
+
+  shuffle(): Cards {
+    const shuffled = this.cards
+      .map(card => ({ card, sort: Math.random() }))
+      .sort((a, b) => a.sort - b.sort)
+      .map(({ card }) => card)
+
+    return new Cards(shuffled);
+  }
+
+  list(): Card[] {
+    return this.cards;
+  }
+}

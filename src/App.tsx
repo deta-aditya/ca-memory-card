@@ -1,7 +1,7 @@
 import Menu from './components/Menu';
 import PlayingGame from './components/PlayingGame';
 import WonGame from './components/WonGame';
-import { AppContextProvider, useAppContext } from './contexts/appContext';
+import { AppContextProvider, useAppContext } from './contexts/appContextOld';
 
 function App() {
   const { state } = useAppContext()

@@ -1,6 +1,6 @@
 import classNames from "classnames";
-import { useAppContext } from "../../../contexts/appContext";
-import { GameCard } from "../../../core/entities/gameCard"
+import { useAppContext } from "../../../contexts/appContextOld";
+import { GameCard } from "../../../core/gameCard"
 
 export type GameCardProps = GameCard;
 

@@ -1,4 +1,4 @@
-import { Game } from "../../core/entities/game";
+import { Game } from "../../core/game";
 import GameCard from "./GameCard";
 
 export type PlayingGameProps = Extract<Game, { kind: 'playing' | 'matching' }>

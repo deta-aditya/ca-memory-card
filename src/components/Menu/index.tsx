@@ -1,4 +1,4 @@
-import { useAppContext } from "../../contexts/appContext";
+import { useAppContext } from "../../contexts/appContextOld";
 
 function Menu() {
   const { startGame } = useAppContext();
